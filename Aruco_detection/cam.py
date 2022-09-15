@@ -9,7 +9,7 @@ dictionary = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
 parameters = cv2.aruco.DetectorParameters_create()
 
 # initialize the webcam as "camera" object
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(2)
 
 # loop that runs the program forever
 # at least until the "q" key is pressed
@@ -22,7 +22,7 @@ while True:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # detect aruco tags within the frame
-    markerCorners, markerIds, rejectedCandidates = cv2.aruco.detectMarkers(gray, dictionary, parameters=parameters)
+    markerCorners, markerIds, rejectedCandidates = cv2.aruco.detectMarkers(gray, dictionary, parameters=parameters, cameraMatrix=matrix_coefficients, distCoeff=distortion_coefficients)
 
     # draw box around aruco marker within camera frame
     img = cv2.aruco.drawDetectedMarkers(img, markerCorners, markerIds)
@@ -70,15 +70,18 @@ while True:
             cv2.line(img, bottomRight, bottomLeft, (0, 255, 0), 2)
             cv2.line(img, bottomLeft, topLeft, (0, 255, 0), 2)
 
-
+            rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(markerCorners[i], 0.02, matrix_coefficients, distortion_coefficients)
+            (rvec - tvec).any()  # get rid of that nasty numpy value array error
+            cv2.aruco.drawDetectedMarkers(frame, markerCorners)  # Draw A square around the markers
+            cv2.aruco.drawAxis(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)  # Draw Axis
 
     # Display the resulting frame
-#    cv2.imshow('frame', img)
+    cv2.imshow('frame', img)
 
     # handler to press the "q" key to exit the program
-#    if cv2.waitKey(1) & 0xFF == ord('q'):
-#        break
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+         break
 
 # When everything done, release the capture
 camera.release()
-#cv2.destroyAllWindows()
+cv2.destroyAllWindows()
